@@ -10,6 +10,10 @@ from .models import User, Favorite
 from .serializers import FavoriteSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import redis
+from django.conf import settings
+
+redis_client = redis.StrictRedis.from_url(settings.CACHES["default"]["LOCATION"], decode_responses=True)
 
 class UserSignupView(APIView):
     @swagger_auto_schema(
@@ -88,8 +92,15 @@ class UserLoginView(APIView):
             return Response({"error": "Something went wrong", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TrendingMoviesView(APIView):
+
     def get(self, request):
         try:
+            cache_key = "trending_movies"
+            cached_data = redis_client.get(cache_key)
+
+            if cached_data:
+                return Response(eval(cached_data))
+        
             url = "https://api.themoviedb.org/3/trending/movie/day?language=en-US"
             headers = {
                 "accept": "application/json",
@@ -99,7 +110,9 @@ class TrendingMoviesView(APIView):
             response = requests.get(url, headers=headers)
 
             if response.status_code == 200:
-                return Response(response.json(), status=status.HTTP_200_OK)
+                data = response.json()
+                redis_client.setex(cache_key, 3600, str(data))  # Cache for 1 hour
+                return Response(data, status=status.HTTP_200_OK)
 
             return Response({"error": f"Failed to fetch movies: {response.status_code}"}, status=response.status_code)
 
@@ -161,7 +174,7 @@ class FavoriteMovieView(APIView):
             },
         ),
         responses={
-            201: openapi.Response("Movie saved as favorite"),
+            201: openapi.Response("Movie saved as favorite."),
             400: openapi.Response("Bad request - validation error"),
             500: openapi.Response("Internal server error"),
         },

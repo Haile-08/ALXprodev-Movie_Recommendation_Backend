@@ -34,10 +34,10 @@ favorites: create and retrieve favorite movies
 
 """
 urlpatterns = [
-    path('signup/', UserSignupView.as_view(), name='signup'),
-    path('login/', UserLoginView.as_view(), name='login'),
-    path('trending/', TrendingMoviesView.as_view(), name='trending-movies'),
-    path('recommend/<int:movie_id>/', MovieRecommendationView.as_view(),
+    path('users/signup/', UserSignupView.as_view(), name='signup'),
+    path('users/login/', UserLoginView.as_view(), name='login'),
+    path('movies/trending/', TrendingMoviesView.as_view(), name='trending-movies'),
+    path('movies/recommend/<int:movie_id>/', MovieRecommendationView.as_view(),
          name='movie-recommendations'),
     path('favorites/', FavoriteMovieView.as_view(), name='favorite-movies'),
     path('docs', schema_view.with_ui('swagger', cache_timeout=0),

@@ -1,30 +1,60 @@
+# package import
+import redis
 import requests
-from django.conf import settings
-from django.db.utils import IntegrityError
+from drf_yasg import openapi
+from rest_framework import status
 from rest_framework.views import APIView
+from django.db.utils import IntegrityError
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
+# Local import
+from django.conf import settings
 from .models import User, Favorite
 from .serializers import FavoriteSerializer
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-import redis
-from django.conf import settings
 
-redis_client = redis.StrictRedis.from_url(settings.CACHES["default"]["LOCATION"], decode_responses=True)
+
+redis_client = redis.StrictRedis.from_url(
+    settings.CACHES["default"]["LOCATION"],
+    decode_responses=True
+    )
+headers = {
+    "accept": "application/json",
+    "Authorization": f"Bearer {settings.TMDB_API_KEY}"
+}
+
 
 class UserSignupView(APIView):
+    # swagger signup schema to input user info
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["email", "first_name", "last_name", "password"],
+            required=[
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
             properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", description="User's email"),
-                "first_name": openapi.Schema(type=openapi.TYPE_STRING, description="User's first name"),
-                "last_name": openapi.Schema(type=openapi.TYPE_STRING, description="User's last name"),
-                "password": openapi.Schema(type=openapi.TYPE_STRING, format="password", description="User's password"),
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="email",
+                    description="User's email"
+                    ),
+                "first_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="User's first name"
+                    ),
+                "last_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="User's last name"
+                    ),
+                "password": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="password",
+                    description="User's password"
+                    ),
             },
         ),
         responses={
@@ -33,7 +63,11 @@ class UserSignupView(APIView):
             500: openapi.Response("Internal server error"),
         },
     )
+
     def post(self, request):
+        """
+        Signup new user
+        """
         try:
             email = request.data.get("email")
             first_name = request.data.get("first_name")
@@ -41,27 +75,59 @@ class UserSignupView(APIView):
             password = request.data.get("password")
 
             if not email or not first_name or not last_name or not password:
-                return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+                # check if all the fields are specified
+                return Response(
+                    {"error": "All fields are required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             if User.objects.filter(email=email).exists():
-                return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+                # check if the user already exists
+                return Response(
+                    {"error": "Email already exists"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            user = User.objects.create_user(email=email, first_name=first_name, last_name=last_name, password=password)
-            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+            user = User.objects.create_user(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                password=password
+            )
+            return Response(
+                {"message": "User created successfully"},
+                status=status.HTTP_201_CREATED
+            )
 
         except IntegrityError:
-            return Response({"error": "Database integrity error, possibly duplicate email"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Database integrity error"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": "Something went wrong", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Something went wrong", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class UserLoginView(APIView):
+    # swagger signup schema to input user info
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["email", "password"],
             properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", description="User's email"),
-                "password": openapi.Schema(type=openapi.TYPE_STRING, format="password", description="User's password"),
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="email",
+                    description="User's email"
+                ),
+                "password": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="password",
+                    description="User's password"
+                ),
             },
         ),
         responses={
@@ -70,15 +136,24 @@ class UserLoginView(APIView):
             500: openapi.Response("Internal server error"),
         },
     )
+
     def post(self, request):
+        """
+        login user
+        """
         try:
             email = request.data.get("email")
             password = request.data.get("password")
 
             if not email or not password:
-                return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+                # check if password and email fields are specified
+                return Response(
+                    {"error": "Email and password are required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             user = User.objects.filter(email=email).first()
+            # auth user with password
             if user and user.check_password(password):
                 refresh = RefreshToken.for_user(user)
                 return Response({
@@ -86,38 +161,50 @@ class UserLoginView(APIView):
                     "access": str(refresh.access_token)
                 }, status=status.HTTP_200_OK)
 
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         except Exception as e:
-            return Response({"error": "Something went wrong", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Something went wrong", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class TrendingMoviesView(APIView):
-
     def get(self, request):
         try:
             cache_key = "trending_movies"
             cached_data = redis_client.get(cache_key)
 
             if cached_data:
+                # check if there is cached data
                 return Response(eval(cached_data))
-        
+
             url = "https://api.themoviedb.org/3/trending/movie/day?language=en-US"
-            headers = {
-                "accept": "application/json",
-                "Authorization": f"Bearer {settings.TMDB_API_KEY}"
-            }
 
             response = requests.get(url, headers=headers)
 
             if response.status_code == 200:
+                # check if the response is okay
                 data = response.json()
-                redis_client.setex(cache_key, 3600, str(data))  # Cache for 1 hour
+                #  Cache for 1 hour
+                redis_client.setex(cache_key, 3600, str(data))
                 return Response(data, status=status.HTTP_200_OK)
 
-            return Response({"error": f"Failed to fetch movies: {response.status_code}"}, status=response.status_code)
+            return Response(
+                {"error": f"Failed to fetch movies: {response.status_code}"},
+                status=response.status_code
+            )
 
         except requests.exceptions.RequestException as e:
-            return Response({"error": "External API request failed", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "External API request failed", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class MovieRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -142,20 +229,28 @@ class MovieRecommendationView(APIView):
     def get(self, request, movie_id):
         try:
             url = f"https://api.themoviedb.org/3/movie/{movie_id}/recommendations?language=en-US&page=1"
-            headers = {
-                "accept": "application/json",
-                "Authorization": f"Bearer {settings.TMDB_API_KEY}"
-            }
 
             response = requests.get(url, headers=headers)
 
             if response.status_code == 200:
+                # check if the response is okay
                 return Response(response.json(), status=status.HTTP_200_OK)
 
-            return Response({"error": f"Failed to fetch recommendations: {response.status_code}"}, status=response.status_code)
+            return Response(
+                {
+                    "error": f"Failed to fetch recommendations: {
+                        response.status_code
+                    }"
+                },
+                status=response.status_code
+            )
 
         except requests.exceptions.RequestException as e:
-            return Response({"error": "External API request failed", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "External API request failed", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class FavoriteMovieView(APIView):
     permission_classes = [IsAuthenticated]
@@ -165,12 +260,31 @@ class FavoriteMovieView(APIView):
             type=openapi.TYPE_OBJECT,
             required=["movie_id", "title", "overview", "password"],
             properties={
-                "movie_id": openapi.Schema(type=openapi.TYPE_STRING, description="Movie id"),
-                "title": openapi.Schema(type=openapi.TYPE_STRING, description="Movie title"),
-                "overview": openapi.Schema(type=openapi.TYPE_STRING, description="Movie overview"),
-                "poster": openapi.Schema(type=openapi.TYPE_STRING, description="Movie poster URL"),
-                "language": openapi.Schema(type=openapi.TYPE_STRING, description="Movie language"),
-                "rating": openapi.Schema(type=openapi.TYPE_NUMBER, format="float", description="Movie rating"),
+                "movie_id": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Movie id"
+                ),
+                "title": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Movie title"
+                ),
+                "overview": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Movie overview"
+                ),
+                "poster": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Movie poster URL"
+                ),
+                "language": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Movie language"
+                ),
+                "rating": openapi.Schema(
+                    type=openapi.TYPE_NUMBER,
+                    format="float",
+                    description="Movie rating"
+                ),
             },
         ),
         responses={
@@ -184,11 +298,20 @@ class FavoriteMovieView(APIView):
             serializer = FavoriteSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(user=request.user)
-                return Response({"message": "Movie saved as favorite"}, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"message": "Movie saved as favorite"},
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         except Exception as e:
-            return Response({"error": "Something went wrong", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Something went wrong", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -207,6 +330,7 @@ class FavoriteMovieView(APIView):
             500: "Server Error - External API failure",
         }
     )
+
     def get(self, request):
         try:
             favorites = Favorite.objects.filter(user=request.user)
@@ -214,4 +338,10 @@ class FavoriteMovieView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({"error": "Failed to fetch favorite movies", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {
+                    "error": "Failed to fetch favorite movies",
+                    "details": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

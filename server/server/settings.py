@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 import os
 import environ
 from pathlib import Path
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     "rest_framework",
     "drf_yasg",
     "movies",
@@ -131,6 +133,14 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,  # This ensures the old token is invalidated
+    "ALGORITHM": "HS256",
+}
+
 # Add your TMDB API Key
 TMDB_API_KEY = env('TMDB_API_KEY')
 
@@ -146,6 +156,7 @@ USE_I18N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'movies.User'
+
 
 
 # Static files (CSS, JavaScript, Images)

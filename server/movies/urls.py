@@ -2,7 +2,7 @@ from drf_yasg import openapi
 from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
-from .views import TrendingMoviesView, MovieRecommendationView
+from .views import TrendingMoviesView, MovieRecommendationView, UserLoginView, UserSignupView, FavoriteMovieView
 
 # create the schema for swagger
 schema_view = get_schema_view(
@@ -19,8 +19,11 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('signup/', UserSignupView.as_view(), name='signup'),
+    path('login/', UserLoginView.as_view(), name='login'),
     path('trending/', TrendingMoviesView.as_view(), name='trending-movies'),
     path('recommend/<int:movie_id>/', MovieRecommendationView.as_view(), name='movie-recommendations'),
+    path('favorites/', FavoriteMovieView.as_view(), name='favorite-movies'),
     path('docs', schema_view.with_ui('swagger', cache_timeout=0),
-         name='swagger-ui')
+         name='swagger-ui'),
 ]

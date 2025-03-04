@@ -238,9 +238,7 @@ class MovieRecommendationView(APIView):
 
             return Response(
                 {
-                    "error": f"Failed to fetch recommendations: {
-                        response.status_code
-                    }"
+                    "error": f"Failed to fetch recommendations: {response.status_code}"
                 },
                 status=response.status_code
             )

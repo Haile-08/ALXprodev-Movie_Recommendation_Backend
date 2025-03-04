@@ -100,6 +100,8 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
   "refresh": "jwt_refresh_token"
 }
 ``` 
+- **Access Token Lifetime**: 15 minute
+- **Refresh Token Lifetime**: 1 day
 
 ### 2. User Signup
 
@@ -201,3 +203,29 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
 ]
 
 ``` 
+
+## Environment variable
+
+```
+# Database connection
+DB_NAME=''
+DB_USER=''
+DB_PASSWORD=''
+DB_HOST=''
+DB_PORT=
+
+# Redis Location
+REDIS_LOCATION=''
+
+# Django secrete key
+SECRET_KEY='
+
+# TMDB API key
+TMDB_API_KEY=''
+```
+
+## Accessing TMDB images
+
+```
+https://image.tmdb.org/t/p/original/<poster>
+```

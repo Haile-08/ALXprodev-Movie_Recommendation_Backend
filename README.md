@@ -45,8 +45,8 @@ The primary objectives of the movie recommendation app backend are: -
 
 The backend is deployed on **Render** using **PostgreSQL** as the database.
 
-- API URL: []()
-- Swagger Documentation: []()
+- API URL: [https://alxprodev-movie-recommendation-backend.onrender.com/api](https://alxprodev-movie-recommendation-backend.onrender.com/api)
+- Swagger Documentation: [https://alxprodev-movie-recommendation-backend.onrender.com/api/docs](https://alxprodev-movie-recommendation-backend.onrender.com/api/docs)
 
 ## Database
 

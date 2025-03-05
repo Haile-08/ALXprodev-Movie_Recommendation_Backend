@@ -7,8 +7,10 @@ from .views import (
     MovieRecommendationView,
     UserLoginView,
     UserSignupView,
-    FavoriteMovieView
+    FavoriteMovieView,
+    DeleteFavoriteMovieView
 )
+from rest_framework_simplejwt.views import TokenRefreshView
 
 # create the schema for swagger
 schema_view = get_schema_view(
@@ -36,10 +38,12 @@ favorites: create and retrieve favorite movies
 urlpatterns = [
     path('users/signup/', UserSignupView.as_view(), name='signup'),
     path('users/login/', UserLoginView.as_view(), name='login'),
+    path('users/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('movies/trending/', TrendingMoviesView.as_view(), name='trending-movies'),
     path('movies/recommend/<int:movie_id>/', MovieRecommendationView.as_view(),
          name='movie-recommendations'),
-    path('favorites/', FavoriteMovieView.as_view(), name='favorite-movies'),
+    path('favorites/', FavoriteMovieView.as_view(), name='favorite-movies'),  # Handles GET (list) and POST (add)
+    path('favorites/<int:id>/', DeleteFavoriteMovieView.as_view(), name='delete-favorite'),  # Handles DELETE
     path('docs', schema_view.with_ui('swagger', cache_timeout=0),
          name='swagger-ui'),
 ]

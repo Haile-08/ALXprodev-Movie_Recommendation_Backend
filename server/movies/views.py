@@ -343,3 +343,34 @@ class FavoriteMovieView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+
+class DeleteFavoriteMovieView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Delete a favorite movie by its ID.",
+        manual_parameters=[
+            openapi.Parameter('id', openapi.IN_PATH, description="ID of the favorite movie to delete",
+                              type=openapi.TYPE_INTEGER, required=True)
+        ],
+        responses={
+            204: "Favorite movie deleted successfully",
+            404: "Favorite movie not found",
+            401: "Unauthorized - User not authenticated",
+            500: "Internal Server Error",
+        },
+    )
+    def delete(self, request, id):
+        """Delete a specific favorite movie."""
+        try:
+            favorite = Favorite.objects.filter(id=id, user=request.user).first()
+            if not favorite:
+                return Response({"error": "Favorite movie not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            favorite.delete()
+            return Response({"message": "Favorite movie deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            return Response({"error": "Failed to delete favorite movie", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

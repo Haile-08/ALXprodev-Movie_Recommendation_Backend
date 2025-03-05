@@ -123,7 +123,24 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
 }
 ``` 
 
-### 3. Get Trending Movies
+### 3. Refresh token
+
+- **Endpoint**: `POST /users/token/refresh/`
+- **Description**: Refresh user access token.
+- **Request Body**:
+```json
+{
+    "refresh": "<your_refresh_token>"
+}
+```
+- **Response Body**:
+```json
+{
+    "access": "<new_access_token>"
+}
+``` 
+
+### 4. Get Trending Movies
 
 - **Endpoint**: `GET /api/movies/trending/`
 - **Description**: Fetches trending movies from TMDb.
@@ -143,7 +160,7 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
 }
 ``` 
 
-### 4. Get Movie Recommendations
+### 5. Get Movie Recommendations
 
 - **Endpoint**: `GET /api/movies/recommendations/{movie_id}/`
 - **Description**: Fetches recommended movies based on a given movie ID.
@@ -162,7 +179,7 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
     ] 
 }
 ``` 
-### 5. Save a Favorite Movie
+### 6. Save a Favorite Movie
 
 - **Endpoint**: `POST /api/favorites/`
 - **Description**: Saves a movie to the user's favorites.
@@ -185,7 +202,7 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
 }
 ``` 
 
-### 6. Get Favorite Movies
+### 7. Get Favorite Movies
 
 - **Endpoint**: `GET /api/favorites/`
 - **Description**: Fetches the logged-in user's favorite movies.
@@ -201,6 +218,18 @@ created_at: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
         "rating": 8.5 
     } 
 ]
+
+``` 
+
+### 8. Delete a Favorite Movie
+
+- **Endpoint**: `DELETE /api/favorites/{id}/`
+- **Description**: delete a movie from the user's favorites.
+- **Response Body**:
+```json
+{
+    "message": "Favorite movie deleted successfully"
+}
 
 ``` 
 

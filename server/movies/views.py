@@ -254,41 +254,50 @@ class FavoriteMovieView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["movie_id", "title", "overview", "password"],
-            properties={
-                "movie_id": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Movie id"
-                ),
-                "title": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Movie title"
-                ),
-                "overview": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Movie overview"
-                ),
-                "poster": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Movie poster URL"
-                ),
-                "language": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Movie language"
-                ),
-                "rating": openapi.Schema(
-                    type=openapi.TYPE_NUMBER,
-                    format="float",
-                    description="Movie rating"
-                ),
-            },
-        ),
-        responses={
-            201: openapi.Response("Movie saved as favorite."),
-            400: openapi.Response("Bad request - validation error"),
-            500: openapi.Response("Internal server error"),
+    manual_parameters=[
+        openapi.Parameter(
+            'Authorization',
+            openapi.IN_HEADER,
+            description="Bearer Token for authentication",
+            type=openapi.TYPE_STRING,
+            required=True
+        )
+    ],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=["movie_id", "title", "overview"],
+        properties={
+            "movie_id": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Movie id"
+            ),
+            "title": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Movie title"
+            ),
+            "overview": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Movie overview"
+            ),
+            "poster": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Movie poster URL"
+            ),
+            "language": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Movie language"
+            ),
+            "rating": openapi.Schema(
+                type=openapi.TYPE_NUMBER,
+                format="float",
+                description="Movie rating"
+            ),
+        },
+    ),
+    responses={
+        201: openapi.Response("Movie saved as favorite."),
+        400: openapi.Response("Bad request - validation error"),
+        500: openapi.Response("Internal server error"),
         },
     )
     def post(self, request):
@@ -352,6 +361,13 @@ class DeleteFavoriteMovieView(APIView):
     @swagger_auto_schema(
         operation_description="Delete a favorite movie by its ID.",
         manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Bearer Token for authentication",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
             openapi.Parameter('id', openapi.IN_PATH, description="ID of the favorite movie to delete",
                               type=openapi.TYPE_INTEGER, required=True)
         ],

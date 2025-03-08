@@ -302,9 +302,9 @@ class FavoriteMovieView(APIView):
     )
     def post(self, request):
         try:
-            serializer = FavoriteSerializer(data=request.data)
+            serializer = FavoriteSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
-                serializer.save(user=request.user)
+                serializer.save()
                 return Response(
                     {"message": "Movie saved as favorite"},
                     status=status.HTTP_201_CREATED

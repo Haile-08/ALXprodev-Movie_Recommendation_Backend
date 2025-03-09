@@ -181,6 +181,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5145",
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://movierecs-iota.vercel.app",
 ]
 
 # Allow specific HTTP methods
